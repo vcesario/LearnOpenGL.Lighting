@@ -26,6 +26,8 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
 int main()
 {
 	glfwInit();
@@ -123,6 +125,17 @@ int main()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
+	litShader.use();
+	litShader.setVec3("light.position", lightPos);
+	litShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+	litShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f); // darken diffuse light a bit
+	litShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+	litShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+	litShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+	litShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+	litShader.setFloat("material.shininess", 32.0f);
+
 	// light source
 	unsigned int lightSourceVAO;
 	glGenVertexArrays(1, &lightSourceVAO);
@@ -142,13 +155,10 @@ int main()
 		glClearColor(.2f, .3f, .3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::vec3 lightPos(1.0f + glm::sin(currentFrame) * 2.0f, glm::sin(currentFrame / 2.0f) * 1.0f, 2.0f);
-
 		// model
 		litShader.use();
 		litShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
 		litShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-		litShader.setVec3("lightPos", lightPos);
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
