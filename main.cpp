@@ -14,6 +14,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -27,6 +28,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightColor(0.5f, 0.5f, 0.5f);
 
 int main()
 {
@@ -47,6 +49,7 @@ int main()
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
+	glfwSetKeyCallback(window, key_callback);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -127,9 +130,9 @@ int main()
 
 	litShader.use();
 	litShader.setVec3("light.position", lightPos);
-	litShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-	litShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f); // darken diffuse light a bit
-	litShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+	litShader.setVec3("light.ambient", 0.2f * lightColor.r, 0.2f * lightColor.g, 0.2f * lightColor.b);
+	litShader.setVec3("light.diffuse", 0.5f * lightColor.r, 0.5f * lightColor.g, 0.5f * lightColor.b); // darken diffuse light a bit
+	litShader.setVec3("light.specular", 1.0f * lightColor.r, 1.0f * lightColor.g, 1.0f * lightColor.b);
 
 	litShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
 	litShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
@@ -157,8 +160,10 @@ int main()
 
 		// model
 		litShader.use();
-		litShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-		litShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+
+		litShader.setVec3("light.ambient", 0.2f * lightColor.r, 0.2f * lightColor.g, 0.2f * lightColor.b);
+		litShader.setVec3("light.diffuse", 0.5f * lightColor.r, 0.5f * lightColor.g, 0.5f * lightColor.b);
+		litShader.setVec3("light.specular", 1.0f * lightColor.r, 1.0f * lightColor.g, 1.0f * lightColor.b);
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
@@ -174,6 +179,7 @@ int main()
 
 		// light source
 		lightSourceShader.use();
+		lightSourceShader.setVec3("lightColor", lightColor);
 		lightSourceShader.setMat4("projection", projection);
 		lightSourceShader.setMat4("view", view);
 
@@ -240,4 +246,24 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll(static_cast<float>(yoffset));
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_KP_1 && action == GLFW_PRESS)
+		lightColor.r = glm::max(0.0f, lightColor.r - 0.1f);
+	if (key == GLFW_KEY_KP_4 && action == GLFW_PRESS)
+		lightColor.r = glm::min(1.0f, lightColor.r + 0.1f);
+
+	if (key == GLFW_KEY_KP_2 && action == GLFW_PRESS)
+		lightColor.g = glm::max(0.0f, lightColor.g - 0.1f);
+	if (key == GLFW_KEY_KP_5 && action == GLFW_PRESS)
+		lightColor.g = glm::min(1.0f, lightColor.g + 0.1f);
+
+	if (key == GLFW_KEY_KP_3 && action == GLFW_PRESS)
+		lightColor.b = glm::max(0.0f, lightColor.b - 0.1f);
+	if (key == GLFW_KEY_KP_6 && action == GLFW_PRESS)
+		lightColor.b = glm::min(1.0f, lightColor.b + 0.1f);
+
+	std::cout << "(" << lightColor.r << ", " << lightColor.g << ", " << lightColor.b << ")" << std::endl;
 }
